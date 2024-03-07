@@ -16,9 +16,22 @@ export const EditCustomerModalComponent = ({ customer, customers, setCustomers }
     const [open, setOpen] = useState(false);
     const [name, setName] = useState(customer.name);
     const [address, setAddress] = useState(customer.address);
+    const [isChanged, setIsChanged] = useState(false);
     const id = customer.id;
-    const url = import.meta.env.VITE_EDIT_CUSTOMER+"?id="+id;
-    
+    const url = import.meta.env.VITE_EDIT_CUSTOMER + "?id=" + id;
+
+
+    const handleNameChange = (event) => {
+        setIsChanged(true);
+        setName(event.target.value)
+    };
+
+    const handleAddressChange = (event) => {
+        setAddress(event.target.value)
+        setIsChanged(true);
+    }
+
+
     const handleEdit = async () => {
 
         try {
@@ -29,16 +42,19 @@ export const EditCustomerModalComponent = ({ customer, customers, setCustomers }
                     address
                 });
             console.log(response.data);
-            setCustomers(...customers, response.data);
+            setCustomers([...customers, response.data]);
         } catch (error) {
             alert(error.code);
             console.log(error);
         }
-        setOpen(false);
+        handleReset();
     };
-
-    const handleCancel = () => {
+    const handleReset = () => {
         setOpen(false);
+        setIsChanged(false);
+    }
+    const handleCancel = () => {
+        handleReset();
         setName(customer.name);
         setAddress(customer.address);
     }
@@ -57,13 +73,13 @@ export const EditCustomerModalComponent = ({ customer, customers, setCustomers }
                     <Form>
                         <FormField required>
                             <label>NAME</label>
-                            <input type='text' onChange={(event) => setName(event.target.value)} 
-                             value={name} />
+                            <input type='text' onChange={handleNameChange}
+                                value={name} />
                         </FormField>
                         <FormField required>
                             <label>ADDRESS</label>
-                            <input type='text' onChange={(event) => setAddress(event.target.value)} 
-                            value={address} />
+                            <input type='text' onChange={handleAddressChange}
+                                value={address} />
                         </FormField>
                     </Form>
 
@@ -76,8 +92,10 @@ export const EditCustomerModalComponent = ({ customer, customers, setCustomers }
                         icon='checkmark'
                         onClick={handleEdit}
                         positive
-
+                        disabled={!(isChanged &&
+                            (name.length > 0 && address.length > 0))}
                     />
+                    
                 </ModalActions>
             </Modal>
 

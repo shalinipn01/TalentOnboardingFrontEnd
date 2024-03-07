@@ -4,7 +4,8 @@ import {
     ModalContent,
     ModalActions,
     Button,
-    Modal
+    Modal,
+    Label
 } from 'semantic-ui-react'
 import { FormField, Form } from 'semantic-ui-react'
 import React, { useState } from 'react';
@@ -16,11 +17,31 @@ export const EditProductModalComponent = ({ product, products, setProducts }) =>
     const [open, setOpen] = useState(false);
     const [name, setName] = useState(product.name);
     const [price, setPrice] = useState(product.price);
+    const [isChanged, setIsChanged]= useState(false);
+    const [priceError, setPriceError] = useState("");
     const id = product.id;
     const url = import.meta.env.VITE_EDIT_PRODUCT+"?id="+id;
     
+    const handleNameChange = (event) => {    
+        setIsChanged(true);        
+        setName(event.target.value)        
+    };
+
+    const handlePriceChange = (event) => {
+        setPrice(event.target.value)
+        setIsChanged(true);
+    }
+    
     const handleEdit = async () => {
 
+        let isValidForm = true;
+        
+        if(isNaN(+price)){
+            isValidForm = false;
+            setPriceError("Please enter a valid price.")
+            setIsChanged(false);
+        }
+        if(isValidForm){
         try {
             const response = await axios.put(url,
                 {
@@ -34,11 +55,16 @@ export const EditProductModalComponent = ({ product, products, setProducts }) =>
             alert(error.code);
             console.log(error);
         }
-        setOpen(false);
+        handleReset();
+    }
     };
-
-    const handleCancel = () => {
+    const handleReset = () => {
         setOpen(false);
+        setPriceError("");
+        setIsChanged(false);
+    }
+    const handleCancel = () => {
+        handleReset();
         setName(product.name);
         setPrice(product.price);
     }
@@ -57,13 +83,16 @@ export const EditProductModalComponent = ({ product, products, setProducts }) =>
                     <Form>
                         <FormField required>
                             <label>NAME</label>
-                            <input type='text' onChange={(event) => setName(event.target.value)} 
+                            <input type='text' onChange={handleNameChange} 
                              value={name} />
                         </FormField>
                         <FormField required>
                             <label>PRICE</label>
-                            <input type='text' onChange={(event) => setPrice(event.target.value)} 
+                            <input type='text' onChange={handlePriceChange} 
                             value={price} />
+                            {priceError && <Label basic color='red' pointing>
+                            {priceError}
+                            </Label>}
                         </FormField>
                     </Form>
 
@@ -76,6 +105,8 @@ export const EditProductModalComponent = ({ product, products, setProducts }) =>
                         icon='checkmark'
                         onClick={handleEdit}
                         positive
+                        disabled={!(isChanged &&
+                            (name.length > 0 && price.length > 0))}
                     />
                 </ModalActions>
             </Modal>

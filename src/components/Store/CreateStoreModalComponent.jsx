@@ -33,9 +33,7 @@ export const CreateStoreModalComponent = ({ stores, setStores }) => {
             console.log(error);
             alert(error.code);
         }
-        setOpen(false);
-        setName("");
-        setAddress("");
+        handleCancel();
     };
 
     const handleCancel = () => {
@@ -43,7 +41,9 @@ export const CreateStoreModalComponent = ({ stores, setStores }) => {
         setName("");
         setAddress("");
     }
-
+    const validate = () => {
+        return name.length >0 && address.length > 0;
+      };
     return (
         <div>
             <Modal
@@ -76,7 +76,7 @@ export const CreateStoreModalComponent = ({ stores, setStores }) => {
                         icon='checkmark'
                         onClick={handleCreate}
                         positive
-
+                        disabled = {!validate()}
                     />
                 </ModalActions>
             </Modal>

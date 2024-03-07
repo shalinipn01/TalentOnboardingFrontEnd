@@ -1,5 +1,5 @@
 import 'semantic-ui-css/semantic.min.css';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
     TableRow,
@@ -27,27 +27,31 @@ export const SalesContainer = ({ currentPage, setCurrentPage, recordsPerPage, se
     useEffect(() => {
         setShowPagination(true);
         setCurrentPage(1);
-    }, [])
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(url);
-                setLoading(false);
-                setSalesList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
-                    (currentPage * recordsPerPage)));
-                setPageCount(Math.ceil(response.data.length / recordsPerPage));
-            } catch (error) {
-                setLoading(false);
-                console.log(error);
-                alert(error.code);
-            }
-
+    }, []);
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(url);
+            setLoading(false);
+            setSalesList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
+                (currentPage * recordsPerPage)));
+            setPageCount(Math.ceil(response.data.length / recordsPerPage));
+        } catch (error) {
+            setLoading(false);
+            console.log(error);
+            alert(error.code);
         }
-        fetchData();
 
     }, [data, currentPage, recordsPerPage]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const renderSaleList = (salesList && salesList.length > 0) ?
+        salesList.map((sale) => (
+            <SaleList key={sale.id} sale={sale} sales={salesList} setSales={setData} />
+        )) : null;
 
     return (
         <>
@@ -66,11 +70,7 @@ export const SalesContainer = ({ currentPage, setCurrentPage, recordsPerPage, se
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-
-                        {salesList && salesList.map((sale) => (
-                            <SaleList key={sale.id} sale={sale} sales={salesList} setSales={setData} />
-                        ))}
-
+                        {renderSaleList}
                     </TableBody>
                 </Table>
                 {loading && <p>Loading Sales</p>}

@@ -16,8 +16,21 @@ export const EditStoreModalComponent = ({ store, stores, setStores }) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState(store.name);
     const [address, setAddress] = useState(store.address);
+    const [isChanged, setIsChanged]= useState(false);
     const id = store.id;
     const url = import.meta.env.VITE_EDIT_STORE+"?id="+id;
+    
+    const handleNameChange = (event) => {
+        
+        setName(event.target.value)
+        setIsChanged(true);
+    };
+
+    const handleAddressChange = (event) => {
+        setAddress(event.target.value)
+        setIsChanged(true);
+    }
+    
     
     const handleEdit = async () => {
 
@@ -34,11 +47,15 @@ export const EditStoreModalComponent = ({ store, stores, setStores }) => {
             alert(error.code);
             console.log(error);
         }
-        setOpen(false);
+        handleReset();
     };
+    const handleReset = () => {
+        setOpen(false);
+        setIsChanged(false);
+    }
 
     const handleCancel = () => {
-        setOpen(false);
+        handleReset();
         setName(store.name);
         setAddress(store.address);
     }
@@ -57,12 +74,12 @@ export const EditStoreModalComponent = ({ store, stores, setStores }) => {
                     <Form>
                         <FormField required>
                             <label>NAME</label>
-                            <input type='text' onChange={(event) => setName(event.target.value)} 
+                            <input type='text' onChange={handleNameChange} 
                              value={name} />
                         </FormField>
                         <FormField required>
                             <label>ADDRESS</label>
-                            <input type='text' onChange={(event) => setAddress(event.target.value)} 
+                            <input type='text' onChange={handleAddressChange} 
                             value={address} />
                         </FormField>
                     </Form>
@@ -76,6 +93,8 @@ export const EditStoreModalComponent = ({ store, stores, setStores }) => {
                         icon='checkmark'
                         onClick={handleEdit}
                         positive
+                        disabled={ !(isChanged &&
+                            (name.length > 0 && address.length > 0))}
                     />
                 </ModalActions>
             </Modal>

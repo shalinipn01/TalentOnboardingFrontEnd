@@ -1,5 +1,5 @@
 import 'semantic-ui-css/semantic.min.css';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CustomerList } from './CustomerList';
 import {
   TableRow,
@@ -18,7 +18,7 @@ const CustomerContainer = ({ currentPage, setCurrentPage, recordsPerPage, setPag
 
   const url = import.meta.env.VITE_GET_ALL_CUSTOMERS;
 
-  const [customersList, setCustomersList] = useState(null);
+  const [customersList, setCustomersList] = useState([]);
   //data variable - to reload the component after create/edit/delete
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,27 +26,31 @@ const CustomerContainer = ({ currentPage, setCurrentPage, recordsPerPage, setPag
   useEffect(() => {
     setShowPagination(true);
     setCurrentPage(1);
-  }, [])
+  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(url);
-        setLoading(false);
-        setCustomersList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
-          (currentPage * recordsPerPage)));
-        setPageCount(Math.ceil(response.data.length / recordsPerPage));
-      } catch (error) {
-        setLoading(false);
-        console.log(error);
-        alert(error.code);
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(url);
+      setLoading(false);
+      setCustomersList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
+        (currentPage * recordsPerPage)));
+      setPageCount(Math.ceil(response.data.length / recordsPerPage));
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      alert(error.code);
     }
-    fetchData();
-
   }, [data, currentPage, recordsPerPage]);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const renderCustomerList = (customersList && customersList.length > 0) ?
+    customersList.map((customer) => (
+      <CustomerList key={customer.id} customer={customer} customers={data} setCustomers={setData} />
+    )) : null;
 
   return (
     <>
@@ -62,11 +66,7 @@ const CustomerContainer = ({ currentPage, setCurrentPage, recordsPerPage, setPag
             </TableRow>
           </TableHeader>
           <TableBody>
-
-            {customersList && customersList.map((customer) => (
-              <CustomerList key={customer.id} customer={customer} customers={data} setCustomers={setData} />
-            ))}
-
+            {renderCustomerList}
           </TableBody>
         </Table>
         {loading && <p>Loading Customers</p>}

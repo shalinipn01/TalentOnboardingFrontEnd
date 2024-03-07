@@ -74,11 +74,7 @@ export const CreateSalesModalComponent = ({ sales, setSales }) => {
             console.log(error);
             alert(error.code);
         }
-        setOpen(false);
-        setCustomerId("");
-        setProductId("");
-        setStoreId("");
-        setDateSold("");
+        handleCancel();
     };
 
     const handleCancel = () => {
@@ -88,7 +84,11 @@ export const CreateSalesModalComponent = ({ sales, setSales }) => {
         setStoreId("");
         setDateSold("");
     }
-
+    const validate = () => {
+        return dateSold.length > 0 && customerId.length > 0 && 
+        productId.length > 0 && storeId.length > 0;
+         
+      };
     return (
         <div>
             <Modal
@@ -144,7 +144,7 @@ export const CreateSalesModalComponent = ({ sales, setSales }) => {
                         icon='checkmark'
                         onClick={handleCreate}
                         positive
-
+                        disabled = {!validate()}
                     />
                 </ModalActions>
             </Modal>

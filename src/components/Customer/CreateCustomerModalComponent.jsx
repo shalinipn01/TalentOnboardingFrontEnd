@@ -33,9 +33,7 @@ export const CreateCustomerModalComponent = ({ customers, setCustomers }) => {
             console.log(error);
             alert(error.code);
         }
-        setOpen(false);
-        setName("");
-        setAddress("");
+        handleCancel();
     };
 
     const handleCancel = () => {
@@ -43,6 +41,10 @@ export const CreateCustomerModalComponent = ({ customers, setCustomers }) => {
         setName("");
         setAddress("");
     }
+
+    const validate = () => {
+        return name.length > 0 && address.length > 0;
+      };
 
     return (
         <div>
@@ -76,7 +78,7 @@ export const CreateCustomerModalComponent = ({ customers, setCustomers }) => {
                         icon='checkmark'
                         onClick={handleCreate}
                         positive
-
+                        disabled = {!validate()}
                     />
                 </ModalActions>
             </Modal>

@@ -23,11 +23,11 @@ export const EditSalesModalComponent = ({ sale, sales, setSales }) => {
     const [productId, setProductId] = useState(sale.productId);
     const [storeId, setStoreId] = useState(sale.storeId);
 
-
     const [customers, setCustomers] = useState([]);
     const [products, setProducts] = useState([]);
     const [stores, setStores] = useState([]);
 
+    const [isChanged, setIsChanged] = useState(false);
 
     useEffect(() => {
         const customersUrl = import.meta.env.VITE_GET_ALL_CUSTOMERS;
@@ -66,6 +66,27 @@ export const EditSalesModalComponent = ({ sale, sales, setSales }) => {
 
     }, []);
 
+    const handleDateSoldChange = (event) => {
+        setIsChanged(true);
+        setDateSold(event.target.value)
+    };
+
+    const handleCustomerChange = (event) => {
+       
+        setCustomerId(event.target.value)
+        console.log(isChanged);
+        setIsChanged(true);
+    }
+    const handleProductChange = (event) => {
+        setIsChanged(true);
+        setProductId(event.target.value)
+    };
+
+    const handleStoreChange = (event) => {
+        setStoreId(event.target.value)
+        setIsChanged(true);
+    }
+
     const handleEdit = async () => {
 
         try {
@@ -89,11 +110,14 @@ export const EditSalesModalComponent = ({ sale, sales, setSales }) => {
             alert(error.code);
             console.log(error);
         }
-        setOpen(false);
+        handleReset();
     };
+    const handleReset = () => {
+        setOpen(false);
+        setIsChanged(false);
+    }
 
     const handleCancel = () => {
-        setOpen(false);
         setCustomerId(sale.customerId);
         setProductId(sale.productId);
         setStoreId(sale.storeId);
@@ -114,30 +138,28 @@ export const EditSalesModalComponent = ({ sale, sales, setSales }) => {
                     <Form>
                         <FormField required>
                             <label>Date sold</label>
-                            <input type='date' onChange={(event) => setDateSold(event.target.value)}
+                            <input type='date' onChange={handleDateSoldChange}
                                 value={moment(new Date(dateSold)).format("YYYY-MM-DD")} />
                         </FormField>
                         <Form.Field label="Customer" control='select'
-                            onChange={(e) => setCustomerId(e.target.value)} required defaultValue={sale.customerId}>
-
+                            onChange={handleCustomerChange} required defaultValue={sale.customerId}>
+                                
                             {customers && customers.map((c) => (
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
 
                         </Form.Field>
                         <Form.Field label="Product" control='select'
-                            onChange={(e) => setProductId(e.target.value)} required defaultValue={sale.productId}>
+                            onChange={handleProductChange} required defaultValue={sale.productId}>
 
-                            <option value="DEFAULT" disabled></option>
                             {products && products.map((p) => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
 
                         </Form.Field>
                         <Form.Field label="Store" control='select'
-                            onChange={(e) => setStoreId(e.target.value)} required defaultValue={sale.storeId}>
+                            onChange={handleStoreChange} required defaultValue={sale.storeId}>
 
-                            <option value="DEFAULT" disabled></option>
                             {stores && stores.map((s) => (
                                 <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
@@ -153,8 +175,10 @@ export const EditSalesModalComponent = ({ sale, sales, setSales }) => {
                         icon='checkmark'
                         onClick={handleEdit}
                         positive
-
-                    />
+                        disabled={!(isChanged &&
+                            (dateSold.length > 0 && !isNaN(customerId) && 
+                            !isNaN(productId) && !isNaN(storeId)))}
+                    />      
                 </ModalActions>
             </Modal>
 

@@ -1,5 +1,5 @@
 import 'semantic-ui-css/semantic.min.css';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 import {
@@ -28,27 +28,30 @@ export const ProductContainer = ({ currentPage, setCurrentPage, recordsPerPage, 
     useEffect(() => {
         setShowPagination(true);
         setCurrentPage(1);
-    }, [])
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(url);
-                setLoading(false);
-                setProductsList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
-                    (currentPage * recordsPerPage)));
-                setPageCount(Math.ceil(response.data.length / recordsPerPage));
-            } catch (error) {
-                setLoading(false);
-                console.log(error);
-                alert(error.code);
-            }
-
+    }, []);
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(url);
+            setLoading(false);
+            setProductsList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
+                (currentPage * recordsPerPage)));
+            setPageCount(Math.ceil(response.data.length / recordsPerPage));
+        } catch (error) {
+            setLoading(false);
+            console.log(error);
+            alert(error.code);
         }
-        fetchData();
 
-    }, [data, currentPage, recordsPerPage]);
+    }, [data, currentPage, recordsPerPage])
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const renderProductList = (productsList && productsList.length > 0) ?
+        productsList.map((product) => (
+            <ProductList key={product.id} product={product} products={data} setProducts={setData} />
+        )) : null;
 
     return (
         <>
@@ -66,11 +69,7 @@ export const ProductContainer = ({ currentPage, setCurrentPage, recordsPerPage, 
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-
-                        {productsList && productsList.map((product) => (
-                            <ProductList key={product.id} product={product} products={data} setProducts={setData} />
-                        ))}
-
+                        {renderProductList}
                     </TableBody>
                 </Table>
                 {loading && <p>Loading Products</p>}

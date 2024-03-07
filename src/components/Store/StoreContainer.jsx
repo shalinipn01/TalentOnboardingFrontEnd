@@ -1,5 +1,5 @@
 import 'semantic-ui-css/semantic.min.css';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
     TableRow,
@@ -25,27 +25,31 @@ export const StoreContainer = ({ currentPage, setCurrentPage, recordsPerPage, se
     useEffect(() => {
         setShowPagination(true);
         setCurrentPage(1);
-    }, [])
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(url);
-                setLoading(false);
-                setStoresList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
-                    (currentPage * recordsPerPage)));
-                setPageCount(Math.ceil(response.data.length / recordsPerPage));
-            } catch (error) {
-                setLoading(false);
-                console.log(error);
-                alert(error.code);
-            }
-
+    }, []);
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(url);
+            setLoading(false);
+            setStoresList(response.data.slice(((currentPage * recordsPerPage) - recordsPerPage),
+                (currentPage * recordsPerPage)));
+            setPageCount(Math.ceil(response.data.length / recordsPerPage));
+        } catch (error) {
+            setLoading(false);
+            console.log(error);
+            alert(error.code);
         }
-        fetchData();
 
     }, [data, currentPage, recordsPerPage]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const renderStoreList = (storesList && storesList.length > 0) ?
+        storesList.map((store) => (
+            <StoreList key={store.id} store={store} stores={data} setStores={setData} />
+        )) : null;
+
 
     return (
         <>
@@ -62,11 +66,7 @@ export const StoreContainer = ({ currentPage, setCurrentPage, recordsPerPage, se
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-
-                        {storesList && storesList.map((store) => (
-                            <StoreList key={store.id} store={store} stores={data} setStores={setData} />
-                        ))}
-
+                        {renderStoreList}
                     </TableBody>
                 </Table>
                 {loading && <p>Loading Stores</p>}
